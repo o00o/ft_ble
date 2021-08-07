@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart'; // use ble
 
 FlutterBlue flutterBlue = FlutterBlue.instance;
+// final List<BluetoothDevice> devicesList = new List<BluetoothDevice>();
+List<BluetoothDevice> devicesList = [];
 
 void main() {
   runApp(MyApp());
@@ -59,19 +61,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _scanBle() {
     // Start scanning
-    print('start: scanning ble');
-    flutterBlue.startScan(timeout: Duration(seconds: 4));
+    devicesList.clear();
+    print('start --> _scanBle');
+    flutterBlue.startScan(timeout: Duration(seconds: 5));
 
     // Listen to scan results
     var subscription = flutterBlue.scanResults.listen((results) {
       // do something with scan results
-      for (ScanResult r in results) {
-        print('${r.device.name} found! rssi: ${r.rssi}');
+      var i = 0;
+      for (ScanResult r in results) { // r is each result of ble scanning
+        print('found device --> ${r.device.id}, ${r.device.name}, rssi: ${r.rssi}');
+
+        if (!devicesList.contains(r.device)) { // tested on 20210807: can check and save only new device as expect
+          devicesList.add(r.device);
+          print('NEW device --> add the device index$i: ${r.device.id}, ${devicesList[i].name}, rssi: ${r.rssi}');
+          print(' - devicesList = ${devicesList}\n - r.device    = ${r.device}');
+          i = i+1;
+        } else {
+          print('same device --> \n - devicesList = ${devicesList}\n - r.device    = ${r.device}');
+        }
+      }
+      print('scan complete --> found ${devicesList.length}');
+      for (var device in devicesList) {
+        print(' - ${device.id}, ${device.name}');
       }
     });
 
-  // Stop scanning
-    flutterBlue.stopScan();
+    print(subscription);
+    print('end --> _scanBle');
+  }
+
+  void _stopBle() {
+    // Stop scanning
+      flutterBlue.stopScan();
   }
 
   @override
