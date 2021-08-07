@@ -36,13 +36,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  StreamController<int> controller = new StreamController<int>();
+  StreamController<List<BluetoothDevice>> controller = new StreamController<List<BluetoothDevice>>();
 
   @override
   void initState() {
     super.initState();
-    controller.add(_counter);
   }
 
   @override
@@ -51,13 +49,13 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  void _incrementCounter() {
-    // setState(() {
-    //   _counter++;
-    // });
-    //แทนที่จะใช้ setState ก็เซ็ตค่าผ่าน StreamController แทน
-    controller.add(_counter++);
-  }
+  // void _showScanningStatus() {
+  //   // setState(() {
+  //   //   _counter++;
+  //   // });
+  //   //แทนที่จะใช้ setState ก็เซ็ตค่าผ่าน StreamController แทน
+  //   controller.add(_counter++);
+  // }
 
   void _scanBle() {
     // Start scanning
@@ -69,16 +67,22 @@ class _MyHomePageState extends State<MyHomePage> {
     var subscription = flutterBlue.scanResults.listen((results) {
       // do something with scan results
       var i = 0;
-      for (ScanResult r in results) { // r is each result of ble scanning
-        print('found device --> ${r.device.id}, ${r.device.name}, rssi: ${r.rssi}');
+      for (ScanResult r in results) {
+        // r is each result of ble scanning
+        print(
+            'found device --> ${r.device.id}, ${r.device.name}, rssi: ${r.rssi}');
 
-        if (!devicesList.contains(r.device)) { // tested on 20210807: can check and save only new device as expect
+        if (!devicesList.contains(r.device)) {
+          // tested on 20210807: can check and save only new device as expect
           devicesList.add(r.device);
-          print('NEW device --> add the device index$i: ${r.device.id}, ${devicesList[i].name}, rssi: ${r.rssi}');
-          print(' - devicesList = ${devicesList}\n - r.device    = ${r.device}');
-          i = i+1;
+          print(
+              'NEW device --> add the device index$i: ${r.device.id}, ${devicesList[i].name}, rssi: ${r.rssi}');
+          print(
+              ' - devicesList = ${devicesList}\n - r.device    = ${r.device}');
+          i = i + 1;
         } else {
-          print('same device --> \n - devicesList = ${devicesList}\n - r.device    = ${r.device}');
+          print(
+              'same device --> \n - devicesList = ${devicesList}\n - r.device    = ${r.device}');
         }
       }
       print('scan complete --> found ${devicesList.length}');
@@ -93,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _stopBle() {
     // Stop scanning
-      flutterBlue.stopScan();
+    flutterBlue.stopScan();
   }
 
   @override
@@ -102,34 +106,45 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            // Text(
-            //   '$_counter',
-            //   style: Theme.of(context).textTheme.headline4,
-            // ),
-            StreamBuilder(
+            StreamBuilder<List<BluetoothDevice>>(
                 stream: controller.stream,
                 // initialData:0 ,
                 builder: (context, snapshot) {
-                  return  Text(
-                        '${snapshot.data}',
-                        style: Theme.of(context).textTheme.headline4,
-                      );
+                  return Text(
+                    '${snapshot.data}',
+                    style: Theme.of(context).textTheme.headline4,
+                  );
                 })
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        // onPressed: _incrementCounter,
-        onPressed: _scanBle,
-        tooltip: 'Increment',
-        child: Icon(Icons.search),
+      floatingActionButton: StreamBuilder<bool>(
+        stream: flutterBlue.isScanning,
+        initialData: false,
+        builder: (context, snapshot) {
+          controller.add(devicesList);
+          if (snapshot.data!) {
+            return FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: _stopBle,
+              tooltip: 'scanning..',
+              child: Icon(
+                Icons.stop,
+                color: Colors.red,
+              ),
+            );
+          } else {
+            return FloatingActionButton(
+              onPressed: _scanBle,
+              tooltip: 'ready to scan',
+              child: Icon(Icons.search),
+            );
+          }
+        },
       ),
     );
   }
