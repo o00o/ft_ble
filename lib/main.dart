@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:flutter_blue/flutter_blue.dart'; // use ble
+
+FlutterBlue flutterBlue = FlutterBlue.instance;
+
 void main() {
   runApp(MyApp());
 }
@@ -53,6 +57,23 @@ class _MyHomePageState extends State<MyHomePage> {
     controller.add(_counter++);
   }
 
+  void _scanBle() {
+    // Start scanning
+    print('start: scanning ble');
+    flutterBlue.startScan(timeout: Duration(seconds: 4));
+
+    // Listen to scan results
+    var subscription = flutterBlue.scanResults.listen((results) {
+      // do something with scan results
+      for (ScanResult r in results) {
+        print('${r.device.name} found! rssi: ${r.rssi}');
+      }
+    });
+
+  // Stop scanning
+    flutterBlue.stopScan();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,9 +104,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        // onPressed: _incrementCounter,
+        onPressed: _scanBle,
         tooltip: 'Increment',
-        child: Icon(Icons.add),
+        child: Icon(Icons.search),
       ),
     );
   }

@@ -35,7 +35,8 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.somdev.ft_ble"
-        minSdkVersion 16
+//        minSdkVersion 16
+        minSdkVersion 19 // flutter_blue need minSdkVersion 19
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
