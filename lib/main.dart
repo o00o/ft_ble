@@ -36,7 +36,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  StreamController<List<BluetoothDevice>> controller = new StreamController<List<BluetoothDevice>>();
+  StreamController<List<BluetoothDevice>> controller =
+      new StreamController<List<BluetoothDevice>>();
 
   @override
   void initState() {
@@ -114,9 +115,36 @@ class _MyHomePageState extends State<MyHomePage> {
                 stream: controller.stream,
                 // initialData:0 ,
                 builder: (context, snapshot) {
-                  return Text(
-                    '${snapshot.data}',
-                    style: Theme.of(context).textTheme.headline4,
+                  // return Text(
+                  //   '${snapshot.data}',
+                  //   style: Theme.of(context).textTheme.headline4,
+                  // );
+                  return Column(
+                    children: snapshot.data!
+                        .map(
+                          (d) => Card(
+                            child: ListTile(
+                              title: Text(
+                                d.id.toString(),
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(d.name),
+                              trailing: ElevatedButton(
+                                // connect ble device button
+                                child: Text(
+                                  'Connect',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onPressed: () {
+                                  // todo: process to connect ble device
+                                },
+                              ),
+                            ),
+                            color: Colors.grey.shade200,
+                            margin: EdgeInsets.all(5),
+                          ),
+                        )
+                        .toList(),
                   );
                 })
           ],
